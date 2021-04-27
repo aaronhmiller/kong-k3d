@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kong-ent
+  annotations:
+    kuma.io/sidecar-injection: enabled
+    kuma.io/sidecar-env-vars: "KMESH_OPA_ENABLED=false"

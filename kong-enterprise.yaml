@@ -1,0 +1,233 @@
+# Kong for Kubernetes with Kong Enterprise with Enterprise features enabled and
+# exposed via TLS-enabled Ingresses. Before installing:
+# * Several settings (search for the string "CHANGEME") require user-provided
+#   Secrets. These Secrets must be created before installation.
+# * Ingresses reference example "<service>.kong.CHANGEME.example" hostnames. These must
+#   be changed to an actual hostname that resolve to your proxy.
+# * Ensure that your session configurations create cookies that are usable
+#   across your services. The admin session configuration must create cookies
+#   that are sent to both the admin API and Kong Manager, and any Dev Portal
+#   instances with authentication must create cookies that are sent to both
+#   the Portal and Portal API.
+
+image:
+  repository: kong-docker-kong-gateway-docker.bintray.io/kong-enterprise-edition
+  tag: "2.3.3.2-alpine"
+
+env:
+  prefix: /kong_prefix/
+  database: postgres
+  admin_gui_url: http://localhost:8002
+  admin_api_uri: http://localhost:8001
+  portal_gui_host: localhost:8003
+  portal_gui_protocol: http
+  portal_api_url: http://localhost:8004
+  pg_password: KingKong
+  password:
+    valueFrom:
+      secretKeyRef:
+        name: kong-enterprise-superuser-password 
+        key: password
+
+migrations:
+  preUpgrade: true
+  postUpgrade: true
+
+waitImage:
+  enabled: false
+
+admin:
+  enabled: true
+  annotations:
+    konghq.com/protocol: "https"
+
+  http:
+    enabled: true
+    servicePort: 8001
+    containerPort: 8001
+    nodePort: 31001
+    parameters: []
+
+  tls:
+    enabled: true
+    servicePort: 8444
+    containerPort: 8444
+    nodePort: 31444
+    parameters:
+    - http2
+
+  ingress:
+    enabled: false
+    tls: CHANGEME-admin-tls-secret
+    hostname: admin.localhost
+    annotations:
+      kubernetes.io/ingress.class: "kong"
+    path: /
+
+proxy:
+  enabled: true
+  type: NodePort
+  annotations: {}
+
+  http:
+    enabled: true
+    servicePort: 8000
+    containerPort: 8000
+    nodePort: 31000
+    parameters: []
+
+  tls:
+    enabled: true
+    servicePort: 8443
+    containerPort: 8443
+    nodePort: 31443
+    parameters:
+    - http2
+
+  stream: {}
+
+  ingress:
+    enabled: false
+    path: /
+
+  externalIPs: []
+
+enterprise:
+  enabled: true
+  # CHANGEME: https://github.com/Kong/charts/blob/main/charts/kong/README.md#kong-enterprise-license
+  license_secret: kong-enterprise-license
+  vitals:
+    enabled: true
+  portal:
+    enabled: true
+  rbac:
+    enabled: true
+    admin_gui_auth: basic-auth
+    session_conf_secret: kong-session-config
+    admin_gui_auth_conf: '{"cookie_secure":false,"storage":"kong","cookie_name":"admin_session","cookie_lifetime":31557600,"cookie_samesite":"off","secret":"please-change-me"}'
+  smtp:
+    enabled: false
+    portal_emails_from: none@example.com
+    portal_emails_reply_to: none@example.com
+    admin_emails_from: none@example.com
+    admin_emails_reply_to: none@example.com
+    smtp_admin_emails: none@example.com
+    smtp_host: smtp.example.com
+    smtp_port: 587
+    smtp_auth_type: ''
+    smtp_ssl: nil
+    smtp_starttls: true
+    auth:
+      smtp_username: ''  # e.g. postmaster@example.com
+      smtp_password_secret: CHANGEME-smtp-password
+
+manager:
+  enabled: true
+  type: NodePort
+  annotations:
+    konghq.com/protocol: "https"
+
+  http:
+    enabled: true
+    servicePort: 8002
+    containerPort: 8002
+    nodePort: 31002
+
+  tls:
+    enabled: true
+    servicePort: 8445
+    containerPort: 8445
+    parameters:
+    - http2
+
+  ingress:
+    enabled: false
+    tls: CHANGEME-manager-tls-secret
+    hostname: manager.localhost
+    annotations: {}
+    path: /
+
+  externalIPs: []
+
+portal:
+  enabled: true
+  type: NodePort
+  annotations:
+    konghq.com/protocol: "http"
+
+  http:
+    enabled: true
+    servicePort: 8003
+    containerPort: 8003
+    nodePort: 31003
+    parameters: []
+
+  tls:
+    enabled: true
+    servicePort: 8446
+    containerPort: 8446
+    nodePort: 31446
+    parameters:
+    - http2
+
+  ingress:
+    enabled: false
+    tls: CHANGEME-portal-tls-secret
+    hostname: portal.localhost
+    annotations:
+      kubernetes.io/ingress.class: "kong"
+    path: /
+
+  externalIPs: []
+
+portalapi:
+  enabled: true
+  type: NodePort
+  annotations:
+    konghq.com/protocol: "http"
+
+  http:
+    enabled: true
+    servicePort: 8004
+    containerPort: 8004
+    nodePort: 31004
+    parameters: []
+
+  tls:
+    enabled: true
+    servicePort: 8447
+    containerPort: 8447
+    nodePort: 31447
+    parameters:
+    - http2
+
+  ingress:
+    enabled: false
+    tls: CHANGEME-portalapi-tls-secret
+    hostname: portalapi.localhost
+    annotations:
+      kubernetes.io/ingress.class: "kong"
+    path: /
+
+  externalIPs: []
+
+postgresql:
+  enabled: true #false if using managed Postgres
+  postgresqlUsername: kong
+  postgresqlDatabase: kong
+  postgresqlPassword: KingKong
+  service:
+    port: 5432
+
+podAnnotations:
+  traffic.kuma.io/exclude-outbound-ports: "443"
+
+ingressController:
+  enabled: true
+  installCRDs: false
+  env:
+    kong_admin_token:
+      valueFrom:
+        secretKeyRef:
+          name: kong-enterprise-superuser-password
+          key: password

@@ -1,0 +1,8 @@
+kind: KongPlugin
+apiVersion: configuration.konghq.com/v1
+metadata:
+  name: correlate-httpbin
+config:
+  echo_downstream: true
+enabled: true
+plugin: correlation-id
