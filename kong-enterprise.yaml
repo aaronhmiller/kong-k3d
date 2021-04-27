@@ -11,7 +11,7 @@
 #   the Portal and Portal API.
 
 image:
-  repository: kong-docker-kong-gateway-docker.bintray.io/kong-enterprise-edition
+  repository: kong/kong-gateway
   tag: "2.3.3.2-alpine"
 
 env:

@@ -22,7 +22,9 @@ To see a plugin applied:
 1. `kubectl apply -f correlation-plugin.yaml -n kong-ent`
 2. now check your proxy again and you should notice the presence of a new header: `"Kong-Request-Id":<some-value>`
 
+Plugins are in Kong Manager <http://localhost:8002> and documented here: https://docs.konghq.com/hub/
 
+For more examples and sample Kong Ingress Controller syntax: https://gist.github.com/nedward/dd445bfa2be781fd9ce32f3122b55895
 
 ##### *Guidance on GUI definition method:
 
