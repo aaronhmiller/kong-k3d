@@ -6,9 +6,9 @@ Local K8S cluster for POCs and quick sniff tests
 
 ## Getting Started
 
-1. Install [k3d](https://k3d.io) (assumes you already have Docker installed as a prerequisite)
+1. Install [k3d](https://k3d.io) (assumes you already have [Docker](https://docs.docker.com/get-docker/) and [Helm](https://helm.sh/docs/intro/install/) installed as prerequisites)
 2. Into the `license.json` place your specific license data
-3. `./install-kong-ent.sh` (this creates a k3s cluster named `mycluster`, installs a Postgres DB, initializes its schema, and initializes and installs Kong Enterprise)
+3. `./install-kong-ent.sh` (this creates a k3s cluster named `mycluster`, adds the Kong helm chart repo, installs a Postgres DB, initializes its schema, and initializes and installs Kong Enterprise)
 4. `kubectl apply -f httpbin.yaml -n kong-ent` (this deploys a container of httpbin)
 5. From here, you can either:
    1. run http://localhost:8002 (kong_admin:KingKong) and manually install a Service and Route using the UI* or (preferred)...
